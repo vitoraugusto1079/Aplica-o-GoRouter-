@@ -20,15 +20,14 @@ class _FavoritesPageState extends State<FavoritesPage> {
     _fetchFavorites();
   }
 
- 
+  
   Future<void> _fetchFavorites() async {
     setState(() => _isLoading = true);
     try {
       final user = supabase.auth.currentUser;
       if (user != null) {
-        
         final response = await supabase
-            .from('favorites')
+            .from('favoritos') 
             .select()
             .eq('user_id', user.id);
 
@@ -47,15 +46,14 @@ class _FavoritesPageState extends State<FavoritesPage> {
     }
   }
 
-  
+ 
   Future<void> _removeFavorite(String favoriteId) async {
     try {
       await supabase
-          .from('favorites')
+          .from('favoritos') 
           .delete()
           .eq('id', favoriteId);
 
-     
       setState(() {
         _favoritesList.removeWhere((item) => item['id'] == favoriteId);
       });
@@ -76,8 +74,6 @@ class _FavoritesPageState extends State<FavoritesPage> {
 
   @override
   Widget build(BuildContext context) {
-    final themeColor = Theme.of(context).colorScheme.primary;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Meus Favoritos'),
@@ -120,7 +116,6 @@ class _FavoritesPageState extends State<FavoritesPage> {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                      
                         onTap: () {
                           context.pushNamed(
                             'details',
@@ -132,7 +127,6 @@ class _FavoritesPageState extends State<FavoritesPage> {
                             },
                           );
                         },
-                      
                         trailing: IconButton(
                           icon: const Icon(Icons.delete, color: Colors.redAccent),
                           onPressed: () => _removeFavorite(item['id']),
