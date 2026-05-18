@@ -11,34 +11,34 @@ class FavoritesPage extends StatefulWidget {
 
 class _FavoritesPageState extends State<FavoritesPage> {
   final supabase = Supabase.instance.client;
-  List<Map<String, dynamic>> _favoritos = [];
   bool _isLoading = true;
+  List<dynamic> _favoritesList = [];
 
   @override
   void initState() {
     super.initState();
-    _buscarFavoritos();
+    _fetchFavorites();
   }
 
-  // Busca no Supabase usando a tabela correta e o JOIN com a tabela de vídeos
-  Future<void> _buscarFavoritos() async {
+  
+  Future<void> _fetchFavorites() async {
     setState(() => _isLoading = true);
     try {
-      final userId = supabase.auth.currentUser!.id;
-      final response = await supabase
-          .from('favoritos') // Nome correto da tabela!
-          .select('id, videos(*)') // Puxando os detalhes do vídeo
-          .eq('user_id', userId);
+      final user = supabase.auth.currentUser;
+      if (user != null) {
+        final response = await supabase
+            .from('favoritos') 
+            .select()
+            .eq('user_id', user.id);
 
-      if (mounted) {
         setState(() {
-          _favoritos = List<Map<String, dynamic>>.from(response);
+          _favoritesList = response;
         });
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Erro ao carregar favoritos.')),
+          SnackBar(content: Text('Erro ao carregar favoritos: $e')),
         );
       }
     } finally {
@@ -46,13 +46,16 @@ class _FavoritesPageState extends State<FavoritesPage> {
     }
   }
 
-  // Remoção usando o ID inteiro correto
-  Future<void> _removerFavorito(int idRegistro) async {
+ 
+  Future<void> _removeFavorite(String favoriteId) async {
     try {
-      await supabase.from('favoritos').delete().eq('id', idRegistro);
-      
+      await supabase
+          .from('favoritos') 
+          .delete()
+          .eq('id', favoriteId);
+
       setState(() {
-        _favoritos.removeWhere((item) => item['id'] == idRegistro);
+        _favoritesList.removeWhere((item) => item['id'] == favoriteId);
       });
 
       if (mounted) {
@@ -63,7 +66,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Erro ao remover.')),
+          SnackBar(content: Text('Erro ao remover: $e')),
         );
       }
     }
@@ -72,60 +75,61 @@ class _FavoritesPageState extends State<FavoritesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF121212), // Fundo escuro do app
       appBar: AppBar(
-        title: const Text('Meus Favoritos', style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.black,
-        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text('Meus Favoritos'),
         centerTitle: true,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Colors.deepPurple))
-          : _favoritos.isEmpty
+          ? const Center(child: CircularProgressIndicator())
+          : _favoritesList.isEmpty
               ? const Center(
                   child: Text(
                     'Você ainda não favoritou nenhum conteúdo.',
-                    style: TextStyle(color: Colors.grey, fontSize: 16),
+                    style: TextStyle(color: Colors.grey),
                   ),
                 )
               : ListView.builder(
-                  itemCount: _favoritos.length,
+                  itemCount: _favoritesList.length,
                   itemBuilder: (context, index) {
-                    final item = _favoritos[index];
-                    final video = item['videos']; // Pega os dados do vídeo que vieram do banco
+                    final item = _favoritesList[index];
 
                     return Card(
-                      color: Colors.grey[900], // Card escuro para combinar
                       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       child: ListTile(
                         leading: ClipRRect(
                           borderRadius: BorderRadius.circular(4),
                           child: Image.network(
-                            video['url_imagem'] ?? 'https://via.placeholder.com/150',
+                            item['image_url'] ?? 'https://via.placeholder.com/150',
                             width: 50,
                             height: 70,
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) =>
-                                const Icon(Icons.movie, color: Colors.grey, size: 40),
+                                const Icon(Icons.movie, size: 40),
                           ),
                         ),
                         title: Text(
-                          video['titulo'] ?? 'Sem título',
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                          item['title'] ?? 'Sem título',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         subtitle: Text(
-                          video['sinopse'] ?? '',
+                          item['synopsis'] ?? '',
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(color: Colors.grey),
                         ),
                         onTap: () {
-                          // Passa o objeto do vídeo inteiro para a tela de detalhes!
-                          context.pushNamed('details', extra: video);
+                          context.pushNamed(
+                            'details',
+                            extra: {
+                              'id': item['video_id'], 
+                              'title': item['title'],
+                              'synopsis': item['synopsis'],
+                              'image_url': item['image_url'],
+                            },
+                          );
                         },
                         trailing: IconButton(
                           icon: const Icon(Icons.delete, color: Colors.redAccent),
-                          onPressed: () => _removerFavorito(item['id']),
+                          onPressed: () => _removeFavorite(item['id']),
                         ),
                       ),
                     );
