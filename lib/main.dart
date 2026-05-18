@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'src/routes/app_router.dart';
+import 'src/routes/app_route.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,3 +28,5 @@ class MeuAppStreaming extends StatelessWidget {
     );
   }
 }
+
+
