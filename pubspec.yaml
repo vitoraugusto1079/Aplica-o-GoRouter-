@@ -30,10 +30,17 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  supabase_flutter: ^2.5.0 # Gerenciamento do banco e autenticação
+  go_router: ^13.2.0       # Gerenciamento de rotas obrigatório
 
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.8
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/icons/
+    - assets/img/
+
+    
 
 dev_dependencies:
   flutter_test:
