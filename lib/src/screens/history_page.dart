@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:intl/intl.dart'; // Para formatar a data (opcional, mas fica mais bonito)
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
