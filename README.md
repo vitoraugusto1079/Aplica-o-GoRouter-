@@ -16,5 +16,5 @@ For help getting started with Flutter development, view the
 samples, guidance on mobile development, and a full API reference.
 
 <h1>Dados para login:</h1>
-Email: palin@gmail.com
+Email: palin@gmail.com <br>
 Senha: 908070
